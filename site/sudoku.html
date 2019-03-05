@@ -1,0 +1,277 @@
+<html>
+<body>
+
+<h1>Sudoku</h1>
+<h2>A sudoku solver by David Bielen</h2>
+
+<script>
+var start = new Date();
+function countzeros(kwadrant){
+         return kwadrant.filter(v => v === 0).length;
+}
+
+function lowestZerosKwadrant(kwadrant, exceptionArray){
+         var numberOfZeros = 9;
+         var returnIndex = false;
+         for(i=1;i<10;i++){
+                 if(countzeros(kwadrant[i])<numberOfZeros && exceptionArray.indexOf(i) == -1){
+                         numberOfZeros = countzeros(kwadrant[i]);
+                         returnIndex = i;
+                 }
+         }
+         return returnIndex;
+}
+
+function findSolutionForOneKwadrant(input,input_R,kwadrant,i){
+    var emtpySpots = [];
+    for (var k=0;k<9;k++){
+        if(kwadrant[i][k] == 0){
+            emtpySpots.push([modulusResult(k,3)+modulusResult(i-1,3)*3,(k%3)+((i+5)%3)*3]);
+        }
+    }
+    for (var j=1;j<10;j++){ //loop over all valid numbers
+        if(kwadrant[i].indexOf(j) < 0){ // check if number already in kwadrant
+            var removeableCells = 0;
+            var indexOfRemovableCells = [];
+            for (var k=0;k<emtpySpots.length;k++){
+                if (input[emtpySpots[k][0]].indexOf(j) != -1 || input_R[emtpySpots[k][1]].indexOf(j) != -1){
+                    removeableCells++;
+                    indexOfRemovableCells.push(k);
+                }
+            }
+        }
+        if(kwadrant[i].indexOf(j) < 0 && emtpySpots.length-removeableCells == 1){
+            for (var k=0;k<emtpySpots.length;k++){
+                if (indexOfRemovableCells.indexOf(k) < 0){
+                    var z = k;
+                }
+            }
+            var solution = [j,emtpySpots[z]];
+            return solution;
+        }
+    }
+    return false;
+}
+
+function modulusResult(a,b){
+    return (a-(a%b))/b;
+}
+
+function otherRows(i,k){
+    var startRowKwadrant = modulusResult(i-1,3)*3;
+    var currentRowLocation = modulusResult(k,3)+startRowKwadrant;
+    var returnArray = [startRowKwadrant,startRowKwadrant+1,startRowKwadrant+2];
+    var index = returnArray.indexOf(currentRowLocation);
+    returnArray.splice(index, 1);
+    return returnArray;
+}
+
+function otherColumns(i,k){
+    var startColumnKwadrant = ((i+5)%3)*3;
+    var currentColumnLocation = (k%3)+startColumnKwadrant;
+    var returnArray = [startColumnKwadrant,startColumnKwadrant+1,startColumnKwadrant+2];
+    var index = returnArray.indexOf(currentColumnLocation);
+    returnArray.splice(index,1);
+    return returnArray;
+}
+
+function findTargetRows(kwadrant,i){
+    var returnArray = [];
+    if (i<4){
+        var addingRows = 0;
+    }
+    else if (i<7){
+        var addingRows = 3;
+    }
+         else {
+                 var addingRows = 6;
+         }
+         for (j=0;j<9;j++){
+                 if (kwadrant[i][j] == 0){
+                         if (j<3){
+				if(returnArray.indexOf(0+addingRows)<0){
+					returnArray.push(0+addingRows);
+                                }
+                         }
+                         else if (j<6){
+				if(returnArray.indexOf(1+addingRows)<0){
+					returnArray.push(1+addingRows);
+                                }
+                         }
+                         else {
+				if(returnArray.indexOf(2+addingRows)<0){
+					returnArray.push(2+addingRows);
+                                }
+                         }
+                 }
+         }
+         return returnArray;
+}
+
+function findTargetColumns(kwadrant,i){
+         var returnArray = [];
+         if (i==1  || i==4 || i==7){
+                 var addingcolumns = 0;
+         }
+         else if (i==2  || i==5 || i==8){
+                 var addingcolumns = 3;
+         }
+         else {
+                 var addingcolumns = 6;
+         }
+         for (j=0;j<9;j++){
+                 if (kwadrant[i][j] == 0){
+                         if (j==0  || j==3 || j==6){
+				if(returnArray.indexOf(0+addingcolumns)<0){
+					returnArray.push(0+addingcolumns);
+                                 }
+                         }
+                         else if (j==1  || j==4 || j==7){
+				if(returnArray.indexOf(1+addingcolumns)<0){
+					returnArray.push(1+addingcolumns);
+                                }
+                         }
+                         else {
+				if(returnArray.indexOf(2+addingcolumns)<0){
+					returnArray.push(2+addingcolumns);
+                                }
+                         }
+                 }
+         }
+         return returnArray;
+}
+
+function makeRowsAndColumnsKwadrant(){
+         var rowsAndColumnsKwadrant = [];
+         for (ii=1;ii<4;ii++){
+                 for (jj=1;jj<4;jj++){
+                         var arrayI = [];
+                         var arrayJ = [];
+                         arrayI.push(((ii-1)*3)+0);
+                         arrayI.push(((ii-1)*3)+1);
+                         arrayI.push(((ii-1)*3)+2);
+                         arrayJ.push(((jj-1)*3)+0);
+                         arrayJ.push(((jj-1)*3)+1);
+                         arrayJ.push(((jj-1)*3)+2);
+                         rowsAndColumnsKwadrant[((ii-1)*3)+jj] =[arrayI,arrayJ];
+                 }
+         }
+         return rowsAndColumnsKwadrant;
+}
+
+var input = [
+   [5, 3, 0, 0, 7, 0, 0, 0, 0],
+   [6, 0, 0, 1, 9, 5, 0, 0, 0],
+   [0, 9, 8, 0, 0, 0, 0, 6, 0],
+   [8, 0, 0, 0, 6, 0, 0, 0, 3],
+   [4, 0, 0, 8, 0, 3, 0, 0, 1],
+   [7, 0, 0, 0, 2, 0, 0, 0, 6],
+   [0, 6, 0, 0, 0, 0, 2, 8, 0],
+   [0, 0, 0, 4, 1, 9, 0, 0, 5],
+   [0, 0, 0, 0, 8, 0, 0, 7, 9]
+];
+
+var input_R = [];
+for (i = 0; i < 9; i++){
+         for (j = 0; j < 9; j++){
+                 if (j == 0){
+                         input_R[i]=[];
+                 }
+                 input_R[i].push(input[j][i]);
+         }
+}
+
+var kwadrant = [];
+for(i=1;i<10;i++){
+         kwadrant[i]=[];
+}
+
+for (ii=1;ii<4;ii++){
+         for (jj=1;jj<4;jj++){
+                 for (i=0;i<3;i++){
+                         for (j=0;j<3;j++){
+kwadrant[((ii-1)*3)+jj].push(input[((ii-1)*3)+i][((jj-1)*3)+j]);
+                         }
+                 }
+         }
+}
+
+var exceptionArray = [];
+
+var indexLowest = lowestZerosKwadrant(kwadrant, exceptionArray);
+
+
+
+document.write('<b>START</b>');
+document.write('<br>');
+for (i=0;i<9;i++){
+	for (j=0;j<9;j++){
+		document.write(input[i][j]+'&nbsp;&nbsp;&nbsp;');
+	}
+
+	document.write('<br>');
+}
+
+var continueLoop = true;
+var i = 1;
+while (i<10){
+    var solution = findSolutionForOneKwadrant(input,input_R,kwadrant,i);
+    if(solution != false){
+        //console.log(solution);
+        continueLoop = false;
+        input[solution[1][0]][solution[1][1]] = solution[0];
+        var input_R = [];
+        for (i = 0; i < 9; i++){
+                 for (j = 0; j < 9; j++){
+                         if (j == 0){
+                                 input_R[i]=[];
+                         }
+                         input_R[i].push(input[j][i]);
+                 }
+        }
+
+        var kwadrant = [];
+        for(i=1;i<10;i++){
+                 kwadrant[i]=[];
+        }
+
+        for (ii=1;ii<4;ii++){
+                 for (jj=1;jj<4;jj++){
+                         for (i=0;i<3;i++){
+                                 for (j=0;j<3;j++){
+        kwadrant[((ii-1)*3)+jj].push(input[((ii-1)*3)+i][((jj-1)*3)+j]);
+                                 }
+                         }
+                 }
+        }
+        i = 1;
+        //console.log(input);
+    }
+    else{
+        i++;
+    }
+
+
+}
+var time = new Date() - start;
+
+document.write('<br>');
+document.write('<br>');
+document.write('<br>');
+document.write('<b>SOLUTION</b>');
+document.write('<br>');
+for (i=0;i<9;i++){
+	for (j=0;j<9;j++){
+		document.write(input[i][j]+'&nbsp;&nbsp;&nbsp;');
+	}
+
+	document.write('<br>');
+}
+document.write('<br>');
+document.write('<br>');
+document.write('timing: ' +time+'ms');
+
+</script>
+</body>
+</html>
+
